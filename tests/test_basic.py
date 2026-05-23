@@ -72,9 +72,62 @@ def test_constants():
     assert repr(off)
 
 
+def test_fpminimax_double():
+    """fpminimax with uniform double-precision coefficients."""
+    f = sin(x) / x
+    iv = Interval(-1, 1)
+    deg = 4
+    formats = [doubleformat] * (deg + 1)
+    p = fpminimax(f, deg, formats, iv)
+    assert int(degree(p)) == deg
+    # Check the result is a valid polynomial that approximates f
+    err = infnorm(f - p, iv)
+    assert float(sup(err)) < 1e-2
+
+
+def test_fpminimax_single():
+    """fpminimax with uniform single-precision coefficients."""
+    f = exp(x)
+    iv = Interval(S("-0.5"), S("0.5"))
+    deg = 3
+    formats = [singleformat] * (deg + 1)
+    p = fpminimax(f, deg, formats, iv)
+    assert int(degree(p)) == deg
+    err = infnorm(f - p, iv)
+    # single precision is ~2^-24 ≈ 6e-8, degree 3 won't reach that
+    assert float(sup(err)) < 1e-2
+
+
+def test_fpminimax_mixed_formats():
+    """fpminimax with mixed double/single coefficient formats."""
+    f = cos(x)
+    iv = Interval(S("-0.5"), S("0.5"))
+    deg = 4
+    # Even coefficients in double, odd in single
+    formats = [doubleformat if i % 2 == 0 else singleformat for i in range(deg + 1)]
+    p = fpminimax(f, deg, formats, iv)
+    assert int(degree(p)) == deg
+
+
+def test_fpminimax_vs_remez():
+    """fpminimax error should be close to (but not better than) remez."""
+    f = sin(x) / x
+    iv = Interval(-1, 1)
+    deg = 5
+    p_remez = remez(f, deg, iv)
+    p_fpm = fpminimax(f, deg, [doubleformat] * (deg + 1), iv)
+    err_remez = float(sup(infnorm(f - p_remez, iv)))
+    err_fpm = float(sup(infnorm(f - p_fpm, iv)))
+    # fpminimax with rounded coefficients can't beat remez
+    assert err_fpm >= err_remez * 0.9  # allow small numerical margin
+    # but should still be a reasonable approximation (within 100x)
+    assert err_fpm < err_remez * 100
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_") and callable(fn):
             fn()
             print(f"  PASS: {name}")
     print("All tests passed!")
+
