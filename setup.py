@@ -27,11 +27,10 @@ from setuptools.command.build_ext import build_ext as _build_ext
 # ---------------------------------------------------------------------------
 # Path configuration
 # ---------------------------------------------------------------------------
-SOLLYA_SRC = Path(__file__).resolve().parent.parent  # sollya-8.0/
+SOLLYA_SRC = Path(__file__).resolve().parent / "sollya-8.0"
 
 def _dep_dir():
-    return os.environ.get("SOLLYA_DEP_DIR",
-                          "/Users/nicolas/Projects/pythonsollya_install_env/local")
+    return os.environ.get("SOLLYA_DEP_DIR") or None
 
 def _get_dirs(name):
     """Return (include_dirs, library_dirs) for a dependency."""
@@ -106,7 +105,7 @@ SOLLYA_CXX_SOURCES = [
 # ---------------------------------------------------------------------------
 # Gather include / library directories
 # ---------------------------------------------------------------------------
-include_dirs = [".."]  # for sollya.h, config.h
+include_dirs = ["sollya-8.0"]  # for sollya.h, config.h
 library_dirs = []
 extra_link_args = []
 
@@ -158,8 +157,8 @@ if sys.platform == "darwin":
 # ---------------------------------------------------------------------------
 # Build the list of C/C++ source file paths (relative to setup.py dir)
 # ---------------------------------------------------------------------------
-c_source_paths = [os.path.join("..", f) for f in SOLLYA_C_SOURCES]
-cxx_source_paths = [os.path.join("..", f) for f in SOLLYA_CXX_SOURCES]
+c_source_paths = [os.path.join("sollya-8.0", f) for f in SOLLYA_C_SOURCES]
+cxx_source_paths = [os.path.join("sollya-8.0", f) for f in SOLLYA_CXX_SOURCES]
 
 # ---------------------------------------------------------------------------
 # Compile flags
@@ -176,11 +175,52 @@ define_macros = [("HAVE_CONFIG_H", "1")]
 # ---------------------------------------------------------------------------
 class build_ext(_build_ext):
     """Custom build_ext that:
-    1. Runs Cython on .pyx files
-    2. Compiles C sources with C flags and C++ sources with C++ flags
+    1. Runs ./configure in the Sollya source tree (if needed)
+    2. Runs Cython on .pyx files
+    3. Compiles C sources with C flags and C++ sources with C++ flags
     """
 
+    def _run_configure(self):
+        """Run ./configure inside the Sollya source directory to generate config.h.
+
+        Skipped if config.h already exists.  Dependency prefixes are forwarded
+        via --with-gmp=, --with-mpfr=, etc. when available.
+        """
+        sollya_dir = SOLLYA_SRC
+        config_h = sollya_dir / "config.h"
+        if config_h.exists():
+            print(f"setup.py: {config_h} already exists — skipping configure")
+            return
+
+        print(f"setup.py: running ./configure in {sollya_dir} …")
+
+        # Build the configure command with dependency paths
+        configure_cmd = ["./configure"]
+
+        dep_mapping = {
+            "gmp":   "GMP_DIR",
+            "mpfr":  "MPFR_DIR",
+            "mpfi":  "MPFI_DIR",
+            "fplll": "FPLLL_DIR",
+        }
+        dep_default = _dep_dir()
+        for lib_name, env_key in dep_mapping.items():
+            prefix = os.environ.get(env_key, dep_default)
+            if prefix and os.path.isdir(prefix):
+                configure_cmd.append(f"--with-{lib_name}={prefix}")
+
+        # libxml2
+        xml2_prefix = os.environ.get("XML2_DIR", dep_default)
+        if xml2_prefix and os.path.isdir(xml2_prefix):
+            configure_cmd.append(f"--with-xml2={xml2_prefix}")
+
+        print(f"setup.py: {' '.join(configure_cmd)}")
+        subprocess.check_call(configure_cmd, cwd=str(sollya_dir))
+
     def build_extensions(self):
+        # Run ./configure in the Sollya source tree first
+        self._run_configure()
+
         # Ensure Cython is available
         try:
             from Cython.Build import cythonize
