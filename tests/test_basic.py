@@ -28,6 +28,36 @@ def test_arithmetic():
     assert float(a ** S("2")) == 9.0
 
 
+def test_mixed_int_arithmetic():
+    a = int(3)
+    b = S("5")
+    assert float(a + b) == 8.0
+    assert float(a * b) == 15.0
+    assert float(a - b) == -2.0
+    assert float(a / b) == 0.6
+    assert float(a ** b) == 243.0
+    assert float(b + a) == 8.0
+    assert float(b * a) == 15.0
+    assert float(b - a) == 2.0
+    assert float(b / a) == 5.0 / 3.0
+    assert float(b ** a) == 125.0
+
+
+def test_mixed_float_arithmetic():
+    a = float(3)
+    b = S("5")
+    assert float(a + b) == 8.0
+    assert float(a * b) == 15.0
+    assert float(a - b) == -2.0
+    assert float(a / b) == 0.6
+    assert float(a ** b) == 243.0
+    assert float(b + a) == 8.0
+    assert float(b * a) == 15.0
+    assert float(b - a) == 2.0
+    assert float(b / a) == 5.0 / 3.0
+    assert float(b ** a) == 125.0
+
+
 def test_math_functions():
     f = sin(x)
     assert "sin" in repr(f)

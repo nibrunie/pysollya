@@ -185,16 +185,35 @@ cdef class SollyaObject:
             return wrap(sollya_lib_concat(l.value, r.value))
         return wrap(sollya_lib_add(l.value, r.value))
 
+    def __radd__(right, left):
+        cdef SollyaObject l = as_SollyaObject(left)
+        cdef SollyaObject r = as_SollyaObject(right)
+        if sollya_lib_obj_is_list(l.value) and (sollya_lib_obj_is_list(r.value) or sollya_lib_obj_is_end_elliptic_list(r.value)):
+            return wrap(sollya_lib_concat(l.value, r.value))
+        return wrap(sollya_lib_add(l.value, r.value))
+
     def __sub__(left, right):
+        return wrap(sollya_lib_sub(as_SollyaObject(left).value, as_SollyaObject(right).value))
+
+    def __rsub__(right, left):
         return wrap(sollya_lib_sub(as_SollyaObject(left).value, as_SollyaObject(right).value))
 
     def __mul__(left, right):
         return wrap(sollya_lib_mul(as_SollyaObject(left).value, as_SollyaObject(right).value))
 
+    def __rmul__(right, left):
+        return wrap(sollya_lib_mul(as_SollyaObject(left).value, as_SollyaObject(right).value))
+
     def __truediv__(left, right):
         return wrap(sollya_lib_div(as_SollyaObject(left).value, as_SollyaObject(right).value))
 
+    def __rtruediv__(right, left):
+        return wrap(sollya_lib_div(as_SollyaObject(left).value, as_SollyaObject(right).value))
+
     def __pow__(self, op, modulo):
+        return wrap(sollya_lib_pow(as_SollyaObject(self).value, as_SollyaObject(op).value))
+
+    def __rpow__(op, self, modullo):
         return wrap(sollya_lib_pow(as_SollyaObject(self).value, as_SollyaObject(op).value))
 
     def __abs__(self):
