@@ -33,9 +33,15 @@ def _dep_dir():
     return os.environ.get("SOLLYA_DEP_DIR") or None
 
 def _get_dirs(name):
-    """Return (include_dirs, library_dirs) for a dependency."""
+    """Return (include_dirs, library_dirs) for a dependency.
+
+    If neither the specific env var (e.g. GMP_DIR) nor SOLLYA_DEP_DIR is set,
+    returns empty lists so the compiler uses default system search paths.
+    """
     env_key = f"{name.upper()}_DIR"
-    base = os.environ.get(env_key, _dep_dir())
+    base = os.environ.get(env_key) or _dep_dir()
+    if base is None:
+        return [], []
     inc = os.path.join(base, "include")
     lib = os.path.join(base, "lib")
     dirs_inc, dirs_lib = [], []
