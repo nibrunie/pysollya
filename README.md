@@ -117,7 +117,7 @@ The **pysollya** Python bindings are released under the [MIT License](LICENSE).
 
 This project bundles source code from [Sollya 8.0](https://www.sollya.org/), which is released under the **CeCILL-C Free Software License** (a French LGPL-compatible license). See [`sollya-8.0/COPYING`](sollya-8.0/COPYING) for the full Sollya license text.
 
-Credit were credit is due, the list of sollya authors are available in [`sollya-8.0/AUTHORS`](sollya-8.0/AUTHORS).
+Credit were credit is due, the list of sollya authors is available in [`sollya-8.0/AUTHORS`](sollya-8.0/AUTHORS).
 
 The Sollya library links against the following libraries, each under their own licenses:
 
