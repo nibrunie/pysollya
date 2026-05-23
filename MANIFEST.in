@@ -1,0 +1,14 @@
+include README.md
+include pyproject.toml
+
+# Sollya C/C++ sources (from parent directory)
+graft ../
+global-include *.c *.h *.cpp *.y *.l
+prune ../.libs
+prune ../.deps
+prune ../doc
+prune ../tests-tool
+prune ../tests-lib
+
+# Cython sources
+recursive-include pysollya *.pyx *.pxd *.py
