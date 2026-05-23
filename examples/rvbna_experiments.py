@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-# this script requires pythonsollya
-# it can be executed inside a pre-built docker image
-#     docker run  -ti --mount type=bind,source="$(pwd)"/,target=/home/app/ pythonsollya:20240714
-# then within the contained:
-#     export LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH
-#     python3 normalization_eval.py
+# this script requires pysollya
+# install pysollya:
+#     pip install pysollya
 
-import sollya
+import pysollya
+from pysollya import SollyaObject, round_sol, floor_sol, log2, RN, halfprecisionformat, singleformat
 import random
 import statistics
 
@@ -19,55 +17,55 @@ import matplotlib.pyplot as plt
 # - how is every product aligned ?
 # - how is every product accumulated ?
 
-def correctlyRoundedDotProd(a, b, resPrec=sollya.binary32):
+def correctlyRoundedDotProd(a, b, resPrec=singleformat):
     """ correctly rounded dot product of n-element arrays a and b to precision @p resPrec
 
         there is no intermediate rounding.
          Accumulation of products is perfomed exactly and finally rounded """
     prods = [ai * bi for (ai, bi) in zip(a, b)]
-    s = sollya.SollyaObject(0.0)
+    s = SollyaObject(0.0)
     for p in prods:
         s += p
     # final rounding
-    return sollya.round(s, resPrec, sollya.RN)
-    # return sollya.round(sum(prods, sollya.SollyaObject(0)), resPrec, sollya.RN)
+    return round_sol(s, resPrec, RN)
+    # return round_sol(sum(prods, SollyaObject(0)), resPrec, RN)
 
-def approxMultDotProd(a, b, multPrec=sollya.binary16, resPrec=sollya.binary32):
+def approxMultDotProd(a, b, multPrec=halfprecisionformat, resPrec=singleformat):
     """ dot product of n-element arrays a and b
         each product is first rounded towards @p multPrec before being exactly
         accumulated and finally rounded """
-    prods = [sollya.round(ai * bi, multPrec, sollya.RN) for (ai, bi) in zip(a, b)]
-    return sollya.round(sum(prods, sollya.SollyaObject(0)), resPrec, sollya.RN)
+    prods = [round_sol(ai * bi, multPrec, RN) for (ai, bi) in zip(a, b)]
+    return round_sol(sum(prods, SollyaObject(0)), resPrec, RN)
 
 def approxMultDotProd_FP16_FP32(a, b):
-    return approxMultDotProd(a, b, sollya.binary16, sollya.binary32)
+    return approxMultDotProd(a, b, halfprecisionformat, singleformat)
 
 def approxMultDotProd_FP32_FP32(a, b):
-    return approxMultDotProd(a, b, sollya.binary32, sollya.binary32)
+    return approxMultDotProd(a, b, singleformat, singleformat)
 def approxMultDotProd_FP32_FP32(a, b):
-    return approxMultDotProd(a, b, sollya.binary32, sollya.binary32)
+    return approxMultDotProd(a, b, singleformat, singleformat)
 
-def approxMultAccDotProd(a, b, multPrec=sollya.binary16, addPrec=sollya.binary16, resPrec=sollya.binary32):
+def approxMultAccDotProd(a, b, multPrec=halfprecisionformat, addPrec=halfprecisionformat, resPrec=singleformat):
     """ dot product of n-element arrays a and b
         each product is first rounded towards @p multPrec before being accumulated
         with a binary tree of addition (rounded to addPrec each time) before being
         eventually finally rounded """
-    prods = [sollya.round(ai * bi, multPrec, sollya.RN) for (ai, bi) in zip(a, b)]
+    prods = [round_sol(ai * bi, multPrec, RN) for (ai, bi) in zip(a, b)]
     def binAddTree(v):
         if len(v) == 1:
             return v
         evenOps = v[0::2]
         oddOps  = v[1::2] 
-        addRes = [sollya.round(ai + bi, addPrec, sollya.RN) for (ai, bi) in zip(evenOps, oddOps)] + ([v[-1]] if len(v) % 2 == 1 else [])
+        addRes = [round_sol(ai + bi, addPrec, RN) for (ai, bi) in zip(evenOps, oddOps)] + ([v[-1]] if len(v) % 2 == 1 else [])
         return binAddTree(addRes)
     result = binAddTree(prods)[0]
-    return sollya.round(result, resPrec, sollya.RN)
+    return round_sol(result, resPrec, RN)
 
 def roundToOddFixed(v, lsbIndex=0):
     """ rounding-to-odd (jamming inexact value) for fixed-point """
     sign = v < 0
     v = abs(v)
-    scalingFactor = sollya.SollyaObject(2) ** (-lsbIndex)
+    scalingFactor = SollyaObject(2) ** (-lsbIndex)
     try:
         scaled = int(v * scalingFactor)
     except ValueError as e:
@@ -87,10 +85,10 @@ def roundToOdd(v, prec: int, emin = None):
         return 0
     # TODO: for subnormal values, the scaling factor should be adjusted
     #       as emin would be the minimum possible exponent
-    exp = sollya.floor(sollya.log2(abs(v)))
+    exp = floor_sol(log2(abs(v)))
     if emin:
         exp = max(exp, emin)
-    preScalingFactor = sollya.SollyaObject(2) ** (- exp)
+    preScalingFactor = SollyaObject(2) ** (- exp)
     preScaled = v * preScalingFactor
     return (-1 if sign else 1) * roundToOddFixed(preScaled, -prec) / preScalingFactor
 
@@ -101,7 +99,7 @@ class ExactFormat:
 
     @staticmethod
     def exponent(value):
-        return sollya.floor(sollya.log2(abs(value)))
+        return floor_sol(log2(abs(value)))
 
 class IEEEFormat:
     def __init__(self, e, m):
@@ -113,7 +111,7 @@ class IEEEFormat:
         return -(2 ** (self.e - 1) - 1)
 
     def exponent(self, value):
-        realExp = sollya.floor(sollya.log2(abs(value)))
+        realExp = floor_sol(log2(abs(value)))
         return max(realExp, self.emin)
 
 
@@ -125,7 +123,7 @@ def bulkNormDotProd(a, b, bulkNormPrec=25, finalPrec=24, prodFormats=(ExactForma
     # this could work by limiting the minimum exponent
     # def ieeeExp
     lhsFormat, rhsFormat = prodFormats
-    # prodExps = [sollya.floor(sollya.log2(abs(ai))) + sollya.floor(sollya.log2(abs(bi))) for (ai, bi) in zip(a, b)]
+    # prodExps = [floor_sol(log2(abs(ai))) + floor_sol(log2(abs(bi))) for (ai, bi) in zip(a, b)]
     prodExps = [lhsFormat.exponent(ai) + rhsFormat.exponent(bi) for (ai, bi) in zip(a, b)]
     maxExp = max(prodExps)
 
@@ -169,9 +167,9 @@ if __name__ == "__main__":
         average = args.average
         sigma = args.sigma
         k = args.k
-        input_prec = sollya.binary16
+        input_prec = halfprecisionformat
         def genVector(k):
-            return [sollya.round(random.gauss(average, sigma), input_prec, sollya.RN) for _ in range(k)]
+            return [round_sol(random.gauss(average, sigma), input_prec, RN) for _ in range(k)]
         v = [(genVector(k), genVector(k)) for _ in range(n)]
 
 
