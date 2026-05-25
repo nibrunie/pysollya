@@ -201,7 +201,7 @@ class build_ext(_build_ext):
         print(f"setup.py: running ./configure in {sollya_dir} …")
 
         # Build the configure command with dependency paths
-        configure_cmd = ["./configure"]
+        configure_cmd = ["./configure", "--disable-dependency-tracking"]
 
         dep_mapping = {
             "gmp":   "GMP_DIR",
