@@ -71,6 +71,7 @@ int sollya_mpfr_round_to_double(mpfr_t rop, mpfr_srcptr op);
 int sollya_mpfr_round_to_single(mpfr_t rop, mpfr_srcptr op);
 int sollya_mpfr_round_to_quad(mpfr_t rop, mpfr_srcptr x);
 int sollya_mpfr_round_to_halfprecision(mpfr_t rop, mpfr_srcptr x);
+int sollya_mpfr_round_to_bfloat16(mpfr_t rop, mpfr_srcptr x);
 int sollya_mpfr_round_to_doubledouble(mpfr_t rop, mpfr_srcptr op);
 int sollya_mpfr_round_to_tripledouble(mpfr_t rop, mpfr_srcptr op);
 int sollya_mpfr_round_to_doubleextended(mpfr_t rop, mpfr_srcptr op);

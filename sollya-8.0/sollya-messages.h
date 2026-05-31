@@ -563,5 +563,6 @@
 #define SOLLYA_MSG_ROUNDING_AT_DECIMAL_DISPLAY                     478
 #define SOLLYA_MSG_CONSTANT_PRECISION_TOO_HIGH                     479
 #define SOLLYA_MSG_MATCHING_OF_ERROR                               480
+#define SOLLYA_MSG_BFLOAT16_NOT_DIFFERENTIABLE                     481
 
 #endif /* ifdef SOLLYA_MESSAGES_H*/

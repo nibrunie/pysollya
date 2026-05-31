@@ -523,6 +523,7 @@ uint64_t hashThingInnerst(node *tree) {
   case SINGLESYMBOL:
   case QUADSYMBOL:
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
   case DOUBLEEXTENDEDSYMBOL:
   case DOUBLEDOUBLESYMBOL:
   case TRIPLEDOUBLESYMBOL:
@@ -972,6 +973,7 @@ uint64_t hashThingNoPolynomialHandling(node *tree) {
   case SINGLESYMBOL:
   case QUADSYMBOL:
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
   case DOUBLEEXTENDEDSYMBOL:
   case DOUBLEDOUBLESYMBOL:
   case TRIPLEDOUBLESYMBOL:
@@ -1732,6 +1734,7 @@ node *copyThingInner(node *tree) {
   case QUADSYMBOL:
     break;
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
     break;
   case DOUBLEEXTENDEDSYMBOL:
     break;
@@ -2559,6 +2562,7 @@ node *deepCopyThing(node *tree) {
   case QUADSYMBOL:
     break;
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
     break;
   case DOUBLEEXTENDEDSYMBOL:
     break;
@@ -3081,6 +3085,7 @@ node *tryFindMemRefOccurrence(node *subtree, node *tree) {
   case SINGLESYMBOL:
   case QUADSYMBOL:
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
   case DOUBLEEXTENDEDSYMBOL:
   case DOUBLEDOUBLESYMBOL:
   case TRIPLEDOUBLESYMBOL:
@@ -3795,6 +3800,7 @@ node *copyThingWithMemRefReuseInner(node *tree, node *reuse, int *didReuse) {
   case QUADSYMBOL:
     break;
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
     break;
   case DOUBLEEXTENDEDSYMBOL:
     break;
@@ -4620,6 +4626,7 @@ char *getTimingStringForThing(node *tree) {
     constString = NULL;
     break;
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
     constString = NULL;
     break;
   case DOUBLEEXTENDEDSYMBOL:
@@ -5462,6 +5469,7 @@ int isExpansionFormat(node *tree) {
   if (tree->nodeType == MEMREF) return isExpansionFormat(getMemRefChild(tree));
   if (tree->nodeType == SINGLESYMBOL) return 1;
   if (tree->nodeType == HALFPRECISIONSYMBOL) return 1;
+  if (tree->nodeType == BFLOAT16SYMBOL) return 1;
   if (tree->nodeType == QUADSYMBOL) return 1;
   if (tree->nodeType == DOUBLESYMBOL) return 1;
   if (tree->nodeType == DOUBLEDOUBLESYMBOL) return 1;
@@ -5474,6 +5482,7 @@ int isExtendedExpansionFormat(node *tree) {
   if (tree->nodeType == MEMREF) return isExtendedExpansionFormat(getMemRefChild(tree));
   if (tree->nodeType == SINGLESYMBOL) return 1;
   if (tree->nodeType == HALFPRECISIONSYMBOL) return 1;
+  if (tree->nodeType == BFLOAT16SYMBOL) return 1;
   if (tree->nodeType == QUADSYMBOL) return 1;
   if (tree->nodeType == DOUBLESYMBOL) return 1;
   if (tree->nodeType == DOUBLEDOUBLESYMBOL) return 1;
@@ -6317,6 +6326,9 @@ int evaluateThingToExpansionFormat(int *result, node *tree) {
     case HALFPRECISIONSYMBOL:
       *result = 6;
       break;
+    case BFLOAT16SYMBOL:
+      *result = 8;
+      break;
     case QUADSYMBOL:
       *result = 7;
       break;
@@ -6369,6 +6381,9 @@ int evaluateThingToExtendedExpansionFormat(int *result, node *tree) {
       break;
     case HALFPRECISIONSYMBOL:
       *result = 6;
+      break;
+    case BFLOAT16SYMBOL:
+      *result = 8;
       break;
     case QUADSYMBOL:
       *result = 7;
@@ -7915,6 +7930,9 @@ char *sRawPrintThingInner(node *tree, int forceDyadic) {
     break;
   case HALFPRECISIONSYMBOL:
     res = newString("halfprecision");
+    break;
+  case BFLOAT16SYMBOL:
+    res = newString("bfloat16");
     break;
   case QUADSYMBOL:
     res = newString("quad");
@@ -14069,6 +14087,16 @@ node *makeHalfPrecisionSymbol() {
 
 }
 
+node *makeBFloat16Symbol() {
+  node *res;
+
+  res = allocateNode();
+  res->nodeType = BFLOAT16SYMBOL;
+
+  return res;
+
+}
+
 node *makeQuadSymbol() {
   node *res;
 
@@ -16106,6 +16134,7 @@ node *freeThing(node *tree) {
     freeNode(tree);
     break;
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
     freeNode(tree);
     break;
   case QUADSYMBOL:
@@ -17176,6 +17205,7 @@ static inline int isEqualThingLibraryInner(node *tree, node *tree2) {
   case SINGLESYMBOL:
     break;
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
     break;
   case QUADSYMBOL:
     break;
@@ -18010,6 +18040,7 @@ int isEqualThing(node *tree, node *tree2) {
   case SINGLESYMBOL:
     break;
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
     break;
   case QUADSYMBOL:
     break;
@@ -18824,6 +18855,7 @@ int isEqualThingNoPoly(node *tree, node *tree2) {
   case SINGLESYMBOL:
     break;
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
     break;
   case QUADSYMBOL:
     break;
@@ -19297,6 +19329,7 @@ int isCorrectlyTypedBaseSymbol(node *tree) {
   case DOUBLESYMBOL:
   case SINGLESYMBOL:
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
   case QUADSYMBOL:
   case DOUBLEEXTENDEDSYMBOL:
   case DOUBLEDOUBLESYMBOL:
@@ -19501,6 +19534,7 @@ int evaluateFormatsListForFPminimax(chain **res, node *list, int n, int mode) {
     case SINGLESYMBOL: a=24; break;
     case QUADSYMBOL: a=113; break;
     case HALFPRECISIONSYMBOL: a=11; break;
+    case BFLOAT16SYMBOL: a=8; break;
     case DOUBLESYMBOL: a=53; break;
     case DOUBLEDOUBLESYMBOL: a=107; break;
     case TRIPLEDOUBLESYMBOL: a=161; break;
@@ -21067,6 +21101,7 @@ int variableUsePreventsPreevaluation(node *tree) {
   case SINGLESYMBOL:
   case QUADSYMBOL:
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
   case DOUBLEEXTENDEDSYMBOL:
   case DOUBLEDOUBLESYMBOL:
   case TRIPLEDOUBLESYMBOL:
@@ -21913,6 +21948,7 @@ node *preevaluateMatcher(node *tree) {
   case QUADSYMBOL:
     break;
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
     break;
   case DOUBLEEXTENDEDSYMBOL:
     break;
@@ -25962,6 +25998,7 @@ node *evaluateThingInnerst(node *tree) {
   case QUADSYMBOL:
     break;
   case HALFPRECISIONSYMBOL:
+  case BFLOAT16SYMBOL:
     break;
   case DOUBLEEXTENDEDSYMBOL:
     break;

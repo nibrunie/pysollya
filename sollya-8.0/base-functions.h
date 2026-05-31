@@ -99,6 +99,7 @@
 #define NEARESTINT 39
 #define HALFPRECISION 30
 #define QUAD 31
+#define BFLOAT16 32
 
 #define DECREASING 0         /* Indicates that for any x<y in the domain of f, f(x)>f(y) */
 #define NONINCREASING 1      /* Indicates that for any x<y in the domain of f, f(x)>=f(y) */
@@ -158,6 +159,7 @@ const baseFunction *get_basefun_abs();
 const baseFunction *get_basefun_double();
 const baseFunction *get_basefun_single();
 const baseFunction *get_basefun_halfprecision();
+const baseFunction *get_basefun_bfloat16();
 const baseFunction *get_basefun_quad();
 const baseFunction *get_basefun_doubledouble();
 const baseFunction *get_basefun_tripledouble();
@@ -191,6 +193,7 @@ const baseFunction *get_basefun_nearestint();
 #define basefun_double (get_basefun_double())
 #define basefun_single (get_basefun_single())
 #define basefun_halfprecision (get_basefun_halfprecision())
+#define basefun_bfloat16 (get_basefun_bfloat16())
 #define basefun_quad (get_basefun_quad())
 #define basefun_doubledouble (get_basefun_doubledouble())
 #define basefun_tripledouble (get_basefun_tripledouble())
@@ -221,6 +224,7 @@ basefun_node_ptr_t makeDouble(basefun_node_ptr_t);
 basefun_node_ptr_t makeSingle(basefun_node_ptr_t);
 basefun_node_ptr_t makeQuad(basefun_node_ptr_t);
 basefun_node_ptr_t makeHalfPrecision(basefun_node_ptr_t);
+basefun_node_ptr_t makeBFloat16(basefun_node_ptr_t);
 basefun_node_ptr_t makeDoubledouble(basefun_node_ptr_t);
 basefun_node_ptr_t makeTripledouble(basefun_node_ptr_t);
 basefun_node_ptr_t makeErf(basefun_node_ptr_t);

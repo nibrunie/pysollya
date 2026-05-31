@@ -194,6 +194,7 @@ int sollya_mpfi_round_to_double(sollya_mpfi_t rop, sollya_mpfi_t op);
 int sollya_mpfi_round_to_single(sollya_mpfi_t rop, sollya_mpfi_t op);
 int sollya_mpfi_round_to_quad(sollya_mpfi_t rop, sollya_mpfi_t op);
 int sollya_mpfi_round_to_halfprecision(sollya_mpfi_t rop, sollya_mpfi_t op);
+int sollya_mpfi_round_to_bfloat16(sollya_mpfi_t rop, sollya_mpfi_t op);
 int sollya_mpfi_round_to_doubledouble(sollya_mpfi_t rop, sollya_mpfi_t op);
 int sollya_mpfi_round_to_tripledouble(sollya_mpfi_t rop, sollya_mpfi_t op);
 int sollya_mpfi_round_to_doubleextended(sollya_mpfi_t rop, sollya_mpfi_t op);

@@ -217,6 +217,7 @@ extern "C" {
     SOLLYA_BASE_FUNC_FLOOR,
     SOLLYA_BASE_FUNC_FREE_VARIABLE,
     SOLLYA_BASE_FUNC_HALFPRECISION,
+    SOLLYA_BASE_FUNC_BFLOAT16,
     SOLLYA_BASE_FUNC_LIBRARYCONSTANT,
     SOLLYA_BASE_FUNC_LIBRARYFUNCTION,
     SOLLYA_BASE_FUNC_LOG,
@@ -555,6 +556,7 @@ extern "C" {
   sollya_obj_t sollya_lib_single(sollya_obj_t);
   sollya_obj_t sollya_lib_quad(sollya_obj_t);
   sollya_obj_t sollya_lib_halfprecision(sollya_obj_t);
+  sollya_obj_t sollya_lib_bfloat16(sollya_obj_t);
   sollya_obj_t sollya_lib_double_double(sollya_obj_t);
   sollya_obj_t sollya_lib_triple_double(sollya_obj_t);
   sollya_obj_t sollya_lib_doubleextended(sollya_obj_t);
@@ -610,6 +612,7 @@ extern "C" {
   sollya_obj_t sollya_lib_single_obj(void);
   sollya_obj_t sollya_lib_quad_obj(void);
   sollya_obj_t sollya_lib_halfprecision_obj(void);
+  sollya_obj_t sollya_lib_bfloat16_obj(void);
   sollya_obj_t sollya_lib_doubleextended_obj(void);
   sollya_obj_t sollya_lib_double_double_obj(void);
   sollya_obj_t sollya_lib_triple_double_obj(void);
@@ -811,6 +814,7 @@ extern "C" {
   int sollya_lib_is_single_obj(sollya_obj_t);
   int sollya_lib_is_quad_obj(sollya_obj_t);
   int sollya_lib_is_halfprecision_obj(sollya_obj_t);
+  int sollya_lib_is_bfloat16_obj(sollya_obj_t);
   int sollya_lib_is_doubleextended_obj(sollya_obj_t);
   int sollya_lib_is_double_double_obj(sollya_obj_t);
   int sollya_lib_is_triple_double_obj(sollya_obj_t);
@@ -921,6 +925,7 @@ extern "C" {
   sollya_obj_t sollya_lib_build_function_single(sollya_obj_t);
   sollya_obj_t sollya_lib_build_function_quad(sollya_obj_t);
   sollya_obj_t sollya_lib_build_function_halfprecision(sollya_obj_t);
+  sollya_obj_t sollya_lib_build_function_bfloat16(sollya_obj_t);
   sollya_obj_t sollya_lib_build_function_double_double(sollya_obj_t);
   sollya_obj_t sollya_lib_build_function_triple_double(sollya_obj_t);
   sollya_obj_t sollya_lib_build_function_erf(sollya_obj_t);
@@ -968,6 +973,7 @@ extern "C" {
 #define SOLLYA_SG(x) sollya_lib_build_function_single(x)
 #define SOLLYA_QD(x) sollya_lib_build_function_quad(x)
 #define SOLLYA_HP(x) sollya_lib_build_function_halfprecision(x)
+#define SOLLYA_BF16(x) sollya_lib_build_function_bfloat16(x)
 #define SOLLYA_DD(x) sollya_lib_build_function_double_double(x)
 #define SOLLYA_TD(x) sollya_lib_build_function_triple_double(x)
 #define SOLLYA_ERF(x) sollya_lib_build_function_erf(x)

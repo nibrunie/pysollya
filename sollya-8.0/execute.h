@@ -322,6 +322,7 @@ extern void endBuffer(void);
 #define EXTERNALDATA 286
 #define EXTERNALDATAUSAGE 287
 #define BEZOUT 288
+#define BFLOAT16SYMBOL 289
 
 
 int executeCommand(node *);
@@ -448,6 +449,7 @@ node *makeDoubleSymbol();
 node *makeSingleSymbol();
 node *makeQuadSymbol();
 node *makeHalfPrecisionSymbol();
+node *makeBFloat16Symbol();
 node *makeDoubleDoubleSymbol();
 node *makeTripleDoubleSymbol();
 node *makeString(char *string);

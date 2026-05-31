@@ -420,6 +420,7 @@ def rationalapprox(f, n):
 # --- format functions ---
 def double_sol(op): return wrap(sollya_lib_double(as_SollyaObject(op).value))
 def single_sol(op): return wrap(sollya_lib_single(as_SollyaObject(op).value))
+def bfloat16_sol(op): return wrap(sollya_lib_bfloat16(as_SollyaObject(op).value))
 
 # --- constants/objects ---
 on = wrap(sollya_lib_on())
@@ -452,6 +453,7 @@ doubleformat = wrap(sollya_lib_double_obj())
 singleformat = wrap(sollya_lib_single_obj())
 quadformat = wrap(sollya_lib_quad_obj())
 halfprecisionformat = wrap(sollya_lib_halfprecision_obj())
+bfloat16format = wrap(sollya_lib_bfloat16_obj())
 doubleextendedformat = wrap(sollya_lib_doubleextended_obj())
 doubledoubleformat = wrap(sollya_lib_double_double_obj())
 tripledoubleformat = wrap(sollya_lib_triple_double_obj())

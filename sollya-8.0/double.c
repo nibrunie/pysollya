@@ -988,6 +988,9 @@ int printPolynomialAsDoubleExpansion(node *poly, mp_prec_t prec) {
 
 void sollya_mpfr_round_to_format(mpfr_t rop, mpfr_srcptr op, int format) {
   switch (format) {
+  case 8:
+    sollya_mpfr_round_to_bfloat16(rop, op);
+    break;
   case 7:
     sollya_mpfr_round_to_quad(rop, op);
     break;
@@ -1015,6 +1018,7 @@ void sollya_mpfr_round_to_format(mpfr_t rop, mpfr_srcptr op, int format) {
   }
 }
 
+int sollya_mpfr_round_to_bfloat16_mode(mpfr_t rop, mpfr_srcptr op, mp_rnd_t mode);
 int sollya_mpfr_round_to_quad_mode(mpfr_t rop, mpfr_srcptr op, mp_rnd_t mode);
 int sollya_mpfr_round_to_halfprecision_mode(mpfr_t rop, mpfr_srcptr op, mp_rnd_t mode);
 int sollya_mpfr_round_to_single_mode(mpfr_t rop, mpfr_srcptr op, mp_rnd_t mode);
@@ -1023,6 +1027,9 @@ int sollya_mpfr_round_to_doubleextended_mode(mpfr_t rop, mpfr_srcptr op, mp_rnd_
 int round_to_expansion_format(mpfr_t rop, mpfr_srcptr op, int format, mp_rnd_t mode) {
   int res;
   switch (format) {
+  case 8:
+    sollya_mpfr_round_to_bfloat16_mode(rop, op, mode);
+    break;
   case 7:
     sollya_mpfr_round_to_quad_mode(rop, op, mode);
     break;
@@ -1767,6 +1774,14 @@ int sollya_mpfr_round_to_halfprecision_mode(mpfr_t rop, mpfr_srcptr x, mp_rnd_t 
 
 int sollya_mpfr_round_to_halfprecision(mpfr_t rop, mpfr_srcptr x) {
   return sollya_mpfr_round_to_halfprecision_mode(rop, x, GMP_RNDN);
+}
+
+int sollya_mpfr_round_to_bfloat16_mode(mpfr_t rop, mpfr_srcptr x, mp_rnd_t mode) {
+  return __sollya_mpfr_round_to_ieee_format(rop, x, 8, 8, mode, 0);
+}
+
+int sollya_mpfr_round_to_bfloat16(mpfr_t rop, mpfr_srcptr x) {
+  return sollya_mpfr_round_to_bfloat16_mode(rop, x, GMP_RNDN);
 }
 
 int sollya_mpfr_round_to_doubleextended_mode(mpfr_t rop, mpfr_srcptr op, mp_rnd_t mode) {

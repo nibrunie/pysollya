@@ -2217,6 +2217,15 @@ EXPORTED_FUNC_DEF(sollya_obj_t, sollya_lib_halfprecision, sollya_obj_t obj1) {
   return evaluatedThing;
 }
 
+EXPORTED_FUNC_DEF(sollya_obj_t, sollya_lib_bfloat16, sollya_obj_t obj1) {
+  node *thingToEvaluate, *evaluatedThing;
+  if (obj1 == NULL) return NULL;
+  thingToEvaluate = addMemRef(makeBFloat16(copyThing(obj1)));
+  evaluatedThing = evaluateThingLibrary(thingToEvaluate);
+  freeThing(thingToEvaluate);
+  return evaluatedThing;
+}
+
 EXPORTED_FUNC_DEF(sollya_obj_t, sollya_lib_double_double, sollya_obj_t obj1) {
   node *thingToEvaluate, *evaluatedThing;
   if (obj1 == NULL) return NULL;
@@ -2698,6 +2707,14 @@ EXPORTED_FUNC_DEF(sollya_obj_t, sollya_lib_quad_obj) {
 EXPORTED_FUNC_DEF(sollya_obj_t, sollya_lib_halfprecision_obj) {
   node *thingToEvaluate, *evaluatedThing;
   thingToEvaluate = addMemRef(makeHalfPrecisionSymbol());
+  evaluatedThing = evaluateThingLibrary(thingToEvaluate);
+  freeThing(thingToEvaluate);
+  return evaluatedThing;
+}
+
+EXPORTED_FUNC_DEF(sollya_obj_t, sollya_lib_bfloat16_obj) {
+  node *thingToEvaluate, *evaluatedThing;
+  thingToEvaluate = addMemRef(makeBFloat16Symbol());
   evaluatedThing = evaluateThingLibrary(thingToEvaluate);
   freeThing(thingToEvaluate);
   return evaluatedThing;
@@ -3983,6 +4000,9 @@ EXPORTED_FUNC_DEF(int, sollya_lib_v_decompose_function, sollya_obj_t obj1, solly
       case HALFPRECISION:
         *base_func = SOLLYA_BASE_FUNC_HALFPRECISION;
         break;
+      case BFLOAT16:
+        *base_func = SOLLYA_BASE_FUNC_BFLOAT16;
+        break;
       case DOUBLEDOUBLE:
         *base_func = SOLLYA_BASE_FUNC_DOUBLEDOUBLE;
         break;
@@ -4165,6 +4185,7 @@ static inline int __sollya_lib_v_construct_function_inner_get_expected_number_ar
   case SOLLYA_BASE_FUNC_EXP_M1:
   case SOLLYA_BASE_FUNC_FLOOR:
   case SOLLYA_BASE_FUNC_HALFPRECISION:
+  case SOLLYA_BASE_FUNC_BFLOAT16:
   case SOLLYA_BASE_FUNC_LOG:
   case SOLLYA_BASE_FUNC_LOG_10:
   case SOLLYA_BASE_FUNC_LOG_1P:
@@ -4376,6 +4397,11 @@ static inline int __sollya_lib_v_construct_function_inner(sollya_obj_t *func, so
     if (num_args < 1) return 0;
     if (!(isPureTree(arg1) || isRange(arg1))) return 0;
     myfunc = addMemRef(sollya_lib_halfprecision(arg1));
+    break;
+  case SOLLYA_BASE_FUNC_BFLOAT16:
+    if (num_args < 1) return 0;
+    if (!(isPureTree(arg1) || isRange(arg1))) return 0;
+    myfunc = addMemRef(sollya_lib_bfloat16(arg1));
     break;
   case SOLLYA_BASE_FUNC_LOG:
     if (num_args < 1) return 0;
@@ -5138,6 +5164,11 @@ EXPORTED_FUNC_DEF(int, sollya_lib_is_quad_obj, sollya_obj_t obj1) {
 EXPORTED_FUNC_DEF(int, sollya_lib_is_halfprecision_obj, sollya_obj_t obj1) {
   if (obj1 == NULL) return 0;
   return (accessThruMemRef(obj1)->nodeType == HALFPRECISIONSYMBOL);
+}
+
+EXPORTED_FUNC_DEF(int, sollya_lib_is_bfloat16_obj, sollya_obj_t obj1) {
+  if (obj1 == NULL) return 0;
+  return (accessThruMemRef(obj1)->nodeType == BFLOAT16SYMBOL);
 }
 
 EXPORTED_FUNC_DEF(int, sollya_lib_is_doubleextended_obj, sollya_obj_t obj1) {
@@ -6474,6 +6505,11 @@ EXPORTED_FUNC_DEF(sollya_obj_t, sollya_lib_build_function_quad, sollya_obj_t obj
 EXPORTED_FUNC_DEF(sollya_obj_t, sollya_lib_build_function_halfprecision, sollya_obj_t obj1) {
   if (obj1 == NULL) return NULL;
   return addMemRef(makeHalfPrecision(obj1));
+}
+
+EXPORTED_FUNC_DEF(sollya_obj_t, sollya_lib_build_function_bfloat16, sollya_obj_t obj1) {
+  if (obj1 == NULL) return NULL;
+  return addMemRef(makeBFloat16(obj1));
 }
 
 EXPORTED_FUNC_DEF(sollya_obj_t, sollya_lib_build_function_double_double, sollya_obj_t obj1) {

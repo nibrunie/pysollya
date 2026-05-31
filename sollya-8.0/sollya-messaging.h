@@ -118,6 +118,7 @@ static const messageEntry messageTextsTable[] = {
   { SOLLYA_MSG_UNDEFINED_ERROR                                        , "Some undefined error occurred. This is a place-holder" },
   { SOLLYA_MSG_ABS_NOT_TWICE_DIFFERENTIABLE                           , "abs is not twice differentiable" },
   { SOLLYA_MSG_HALF_NOT_DIFFERENTIABLE                                , "half-precision rounding operator not differentiable" },
+  { SOLLYA_MSG_BFLOAT16_NOT_DIFFERENTIABLE                            , "bfloat16 rounding operator not differentiable" },
   { SOLLYA_MSG_SINGLE_NOT_DIFFERENTIABLE                              , "single rounding operator not differentiable" },
   { SOLLYA_MSG_DOUBLE_NOT_DIFFERENTIABLE                              , "double rounding operator not differentiable" },
   { SOLLYA_MSG_DOUBLEEXTENDED_NOT_DIFFERENTIABLE                      , "double-extended rounding operator not differentiable" },

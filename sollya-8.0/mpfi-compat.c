@@ -1675,6 +1675,37 @@ int sollya_mpfi_round_to_halfprecision(sollya_mpfi_t rop, sollya_mpfi_t op) {
   return res;
 }
 
+int sollya_mpfi_round_to_bfloat16(sollya_mpfi_t rop, sollya_mpfi_t op) {
+  mpfr_t l,r, lres, rres;
+  mp_prec_t prec, p, pp;
+  int res;
+
+  prec = sollya_mpfi_get_prec(op) + 10;
+  pp = sollya_mpfi_get_prec(rop);
+  p = prec;
+  if (pp > p) p = pp;
+  if (64 > p) p = 64;
+  mpfr_init2(l,prec);
+  mpfr_init2(r,prec);
+  mpfr_init2(lres,p);
+  mpfr_init2(rres,p);
+
+  sollya_mpfi_get_left(l,op);
+  sollya_mpfi_get_right(r,op);
+
+  sollya_mpfr_round_to_bfloat16(lres,l);
+  sollya_mpfr_round_to_bfloat16(rres,r);
+
+  res = sollya_mpfi_interv_fr(rop,lres,rres);
+
+  mpfr_clear(l);
+  mpfr_clear(r);
+  mpfr_clear(lres);
+  mpfr_clear(rres);
+
+  return res;
+}
+
 int sollya_mpfi_round_to_doubledouble(sollya_mpfi_t rop, sollya_mpfi_t op) {
   mpfr_t l,r, lres, rres;
   mp_prec_t prec, p, pp;

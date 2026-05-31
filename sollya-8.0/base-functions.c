@@ -110,6 +110,7 @@ static void abs_diff(sollya_mpfi_t *res, sollya_mpfi_t x, int n, int *silent);
 static void single_diff(sollya_mpfi_t *res, sollya_mpfi_t x, int n, int *silent);
 static void quad_diff(sollya_mpfi_t *res, sollya_mpfi_t x, int n, int *silent);
 static void halfprecision_diff(sollya_mpfi_t *res, sollya_mpfi_t x, int n, int *silent);
+static void bfloat16_diff(sollya_mpfi_t *res, sollya_mpfi_t x, int n, int *silent);
 static void double_diff(sollya_mpfi_t *res, sollya_mpfi_t x, int n, int *silent);
 static void doubledouble_diff(sollya_mpfi_t *res, sollya_mpfi_t x, int n, int *silent);
 static void tripledouble_diff(sollya_mpfi_t *res, sollya_mpfi_t x, int n, int *silent);
@@ -143,6 +144,7 @@ static basefun_node_ptr_t double_diff_expr(basefun_node_ptr_t g);
 static basefun_node_ptr_t single_diff_expr(basefun_node_ptr_t g);
 static basefun_node_ptr_t quad_diff_expr(basefun_node_ptr_t g);
 static basefun_node_ptr_t halfprecision_diff_expr(basefun_node_ptr_t g);
+static basefun_node_ptr_t bfloat16_diff_expr(basefun_node_ptr_t g);
 static basefun_node_ptr_t doubledouble_diff_expr(basefun_node_ptr_t g);
 static basefun_node_ptr_t tripledouble_diff_expr(basefun_node_ptr_t g);
 static basefun_node_ptr_t doubleextended_diff_expr(basefun_node_ptr_t g);
@@ -178,6 +180,7 @@ static basefun_node_ptr_t simplify_double(basefun_node_ptr_t g);
 static basefun_node_ptr_t simplify_single(basefun_node_ptr_t g);
 static basefun_node_ptr_t simplify_quad(basefun_node_ptr_t g);
 static basefun_node_ptr_t simplify_halfprecision(basefun_node_ptr_t g);
+static basefun_node_ptr_t simplify_bfloat16(basefun_node_ptr_t g);
 static basefun_node_ptr_t simplify_doubledouble(basefun_node_ptr_t g);
 static basefun_node_ptr_t simplify_tripledouble(basefun_node_ptr_t g);
 static basefun_node_ptr_t simplify_doubleextended(basefun_node_ptr_t g);
@@ -213,6 +216,7 @@ static int double_evalsign(int *sign, basefun_node_ptr_t c);
 static int single_evalsign(int *sign, basefun_node_ptr_t c);
 static int quad_evalsign(int *sign, basefun_node_ptr_t c);
 static int halfprecision_evalsign(int *sign, basefun_node_ptr_t c);
+static int bfloat16_evalsign(int *sign, basefun_node_ptr_t c);
 static int doubledouble_evalsign(int *sign, basefun_node_ptr_t c);
 static int tripledouble_evalsign(int *sign, basefun_node_ptr_t c);
 static int doubleextended_evalsign(int *sign, basefun_node_ptr_t c);
@@ -291,6 +295,7 @@ static int try_exact_rational_eval_doubleextended(mpq_t res, mpq_t x);
 static int try_exact_rational_eval_quad(mpq_t res, mpq_t x);
 static int try_exact_rational_eval_single(mpq_t res, mpq_t x);
 static int try_exact_rational_eval_halfprecision(mpq_t res, mpq_t x);
+static int try_exact_rational_eval_bfloat16(mpq_t res, mpq_t x);
 static int try_exact_rational_eval_floor(mpq_t res, mpq_t x);
 static int try_exact_rational_eval_ceil(mpq_t res, mpq_t x);
 static int try_exact_rational_eval_nearestint(mpq_t res, mpq_t x);
@@ -876,6 +881,29 @@ static const baseFunction basefun_halfprecision[1] = { {
     .diff_expr = halfprecision_diff_expr,
     .simplify = simplify_halfprecision,
     .evalsign = halfprecision_evalsign
+  } };
+
+static const baseFunction basefun_bfloat16_local[1] = { {
+    .baseFunctionCode = BFLOAT16,
+    .functionName = "bfloat16",
+    .xmlString = "<csymbol definitionURL=\"http://www.google.com/\" encoding=\"OpenMath\">bfloat16</csymbol>\n",
+    .mpfrName = "",
+    .handledByImplementconst = 0,
+    .isDefinedEverywhere = 0, /* because of overflows: for large numbers, it becomes +Inf */
+    .isDifferentiableEverywhere = 0,
+    .onlyZeroIsZero = 0,
+    .doesNotVanish = 0,
+    .monotonicity = NONDECREASING,
+    .faithEvaluationOptimizedSupported = 0,
+    .getRecurseCutoff = getRecurseCutoff_default, /* could do something smarter */
+    .getRecursePrec = getRecursePrec_default,
+    .baseAutodiff = bfloat16_diff,
+    .interval_eval = sollya_mpfi_round_to_bfloat16,
+    .point_eval = sollya_mpfr_round_to_bfloat16,
+    .try_exact_rational_eval = try_exact_rational_eval_bfloat16,
+    .diff_expr = bfloat16_diff_expr,
+    .simplify = simplify_bfloat16,
+    .evalsign = bfloat16_evalsign
   } };
 
 static const baseFunction basefun_quad[1] = { {
@@ -1973,6 +2001,26 @@ static void halfprecision_diff(sollya_mpfi_t *res, sollya_mpfi_t x, int n, int *
   mpfr_clear(temp);
 }
 
+static void bfloat16_diff(sollya_mpfi_t *res, sollya_mpfi_t x, int n, int *silent){
+  int i;
+  mpfr_t temp;
+  mp_prec_t prec;
+
+  UNUSED_PARAM(x);
+
+  prec = getToolPrecision();
+  mpfr_init2(temp, prec);
+  mpfr_set_nan(temp);
+
+  if (!(*silent)) {
+    *silent = 1;
+    printMessage(1, SOLLYA_MSG_BFLOAT16_NOT_DIFFERENTIABLE, "Warning: the bfloat16 rounding operator is not differentiable.\n");
+    printMessage(1, SOLLYA_MSG_CONTINUATION, "Will return [@NaN@, @NaN@].\n");
+  }
+  for(i=0;i<=n;i++) sollya_mpfi_set_fr(res[i], temp);
+  mpfr_clear(temp);
+}
+
 static void double_diff(sollya_mpfi_t *res, sollya_mpfi_t x, int n, int *silent){
   int i;
   mpfr_t temp;
@@ -2314,6 +2362,13 @@ static basefun_node_ptr_t halfprecision_diff_expr(basefun_node_ptr_t g) {
   UNUSED_PARAM(g);
   printMessage(1,SOLLYA_MSG_HALF_NOT_DIFFERENTIABLE,
                "Warning: the half-precision rounding operator is not differentiable.\nReplacing it by a constant function when differentiating.\n");
+  return makeConstantDouble(0.0);
+}
+
+static basefun_node_ptr_t bfloat16_diff_expr(basefun_node_ptr_t g) {
+  UNUSED_PARAM(g);
+  printMessage(1,SOLLYA_MSG_BFLOAT16_NOT_DIFFERENTIABLE,
+               "Warning: the bfloat16 rounding operator is not differentiable.\nReplacing it by a constant function when differentiating.\n");
   return makeConstantDouble(0.0);
 }
 
@@ -2854,6 +2909,7 @@ static basefun_node_ptr_t simplify_double(basefun_node_ptr_t g) { return simplif
 static basefun_node_ptr_t simplify_single(basefun_node_ptr_t g) { return simplify_rounding_function(basefun_single, g, 64, 96); }
 static basefun_node_ptr_t simplify_quad(basefun_node_ptr_t g) { return simplify_rounding_function(basefun_quad, g, 128, 160); }
 static basefun_node_ptr_t simplify_halfprecision(basefun_node_ptr_t g) { return simplify_rounding_function(basefun_halfprecision, g, 64, 32); }
+static basefun_node_ptr_t simplify_bfloat16(basefun_node_ptr_t g) { return simplify_rounding_function(basefun_bfloat16_local, g, 64, 8); }
 static basefun_node_ptr_t simplify_doubledouble(basefun_node_ptr_t g) { return simplify_rounding_function(basefun_doubledouble, g, 129, 161); }
 static basefun_node_ptr_t simplify_tripledouble(basefun_node_ptr_t g) { return simplify_rounding_function(basefun_tripledouble, g, 200, 224); }
 static basefun_node_ptr_t simplify_doubleextended(basefun_node_ptr_t g) { return simplify_rounding_function(basefun_doubleextended, g, 128, 96); }
@@ -3105,6 +3161,7 @@ static int double_evalsign(int *sign, basefun_node_ptr_t c) { return void_evalsi
 static int single_evalsign(int *sign, basefun_node_ptr_t c) { return void_evalsign(sign, c); }
 static int quad_evalsign(int *sign, basefun_node_ptr_t c) { return void_evalsign(sign, c); }
 static int halfprecision_evalsign(int *sign, basefun_node_ptr_t c) { return void_evalsign(sign, c); }
+static int bfloat16_evalsign(int *sign, basefun_node_ptr_t c) { return void_evalsign(sign, c); }
 static int doubledouble_evalsign(int *sign, basefun_node_ptr_t c) { return void_evalsign(sign, c); }
 static int tripledouble_evalsign(int *sign, basefun_node_ptr_t c) { return void_evalsign(sign, c); }
 static int doubleextended_evalsign(int *sign, basefun_node_ptr_t c) { return void_evalsign(sign, c); }
@@ -3599,6 +3656,7 @@ static int try_exact_rational_eval_doubleextended(mpq_t res, mpq_t x) { return t
 static int try_exact_rational_eval_quad(mpq_t res, mpq_t x) { return try_exact_rational_eval_piecewise_constant_functions(basefun_quad, res, x); }
 static int try_exact_rational_eval_single(mpq_t res, mpq_t x) { return try_exact_rational_eval_piecewise_constant_functions(basefun_single, res, x); }
 static int try_exact_rational_eval_halfprecision(mpq_t res, mpq_t x) { return try_exact_rational_eval_piecewise_constant_functions(basefun_halfprecision, res, x); }
+static int try_exact_rational_eval_bfloat16(mpq_t res, mpq_t x) { return try_exact_rational_eval_piecewise_constant_functions(basefun_bfloat16_local, res, x); }
 static int try_exact_rational_eval_floor(mpq_t res, mpq_t x) { return try_exact_rational_eval_piecewise_constant_functions(basefun_floor, res, x); }
 static int try_exact_rational_eval_ceil(mpq_t res, mpq_t x) { return try_exact_rational_eval_piecewise_constant_functions(basefun_ceil, res, x); }
 static int try_exact_rational_eval_nearestint(mpq_t res, mpq_t x) { return try_exact_rational_eval_piecewise_constant_functions(basefun_nearestint, res, x); }
@@ -3632,6 +3690,7 @@ const baseFunction *get_basefun_abs() { return basefun_abs; }
 const baseFunction *get_basefun_double() { return basefun_double; }
 const baseFunction *get_basefun_single() { return basefun_single; }
 const baseFunction *get_basefun_halfprecision() { return basefun_halfprecision; }
+const baseFunction *get_basefun_bfloat16() { return basefun_bfloat16_local; }
 const baseFunction *get_basefun_quad() { return basefun_quad; }
 const baseFunction *get_basefun_doubledouble() { return basefun_doubledouble; }
 const baseFunction *get_basefun_tripledouble() { return basefun_tripledouble; }
@@ -3712,6 +3771,10 @@ node *makeQuad(node *op1) {
 
 node *makeHalfPrecision(node *op1) {
   return makeUnary(op1,basefun_halfprecision);
+}
+
+node *makeBFloat16(node *op1) {
+  return makeUnary(op1,basefun_bfloat16_local);
 }
 
 node *makeDoubledouble(node *op1) {
